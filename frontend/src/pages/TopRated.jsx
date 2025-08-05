@@ -1,11 +1,28 @@
 import React from 'react';
 import { Star, Trophy } from 'lucide-react';
 import MovieCard from '../components/MovieCard';
-import { mockMovies } from '../data/mockMovies';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
+import { useTopRatedMovies } from '../hooks/useMovies';
 
 const TopRated = () => {
-  // Sort movies by rating in descending order
-  const topRatedMovies = [...mockMovies].sort((a, b) => b.rating - a.rating);
+  const { topRatedMovies, loading, error } = useTopRatedMovies();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <LoadingSpinner size="large" message="Loading top rated movies..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <ErrorMessage error={error} title="Failed to load top rated movies" showRetry={false} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 py-8">
