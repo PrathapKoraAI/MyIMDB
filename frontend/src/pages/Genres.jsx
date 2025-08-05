@@ -75,6 +75,22 @@ const Genres = () => {
     'bg-sky-600', 'bg-fuchsia-600', 'bg-slate-600', 'bg-stone-600'
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <LoadingSpinner size="large" message="Loading genres..." />
+      </div>
+    );
+  }
+
+  if (error && !selectedGenre) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <ErrorMessage error={error} title="Failed to load genres" showRetry={false} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -102,7 +118,7 @@ const Genres = () => {
                     <div className="p-4">
                       <h3 className="text-white font-semibold text-center mb-1">{genre}</h3>
                       <p className="text-gray-400 text-sm text-center">
-                        {getGenreCount(genre)} movies
+                        {movieCounts[genre] || 0} movies
                       </p>
                     </div>
                   </CardContent>
@@ -114,7 +130,7 @@ const Genres = () => {
             <section className="mt-16">
               <h2 className="text-2xl font-bold text-white mb-6">Popular Genres</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {['Action', 'Drama', 'Crime'].map((genre, index) => (
+                {['Action', 'Drama', 'Crime'].filter(genre => genres.includes(genre)).map((genre, index) => (
                   <Card
                     key={genre}
                     className="cursor-pointer bg-gray-800 border-gray-700 hover:border-yellow-400 transition-colors"
@@ -126,7 +142,7 @@ const Genres = () => {
                       </div>
                       <h3 className="text-xl font-bold text-white mb-2">{genre}</h3>
                       <p className="text-gray-400 mb-4">
-                        {getGenreCount(genre)} movies available
+                        {movieCounts[genre] || 0} movies available
                       </p>
                       <div className="flex items-center text-yellow-400 hover:text-yellow-300">
                         <span>Browse {genre}</span>
@@ -155,13 +171,17 @@ const Genres = () => {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {genreMovies.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} size="medium" />
-              ))}
-            </div>
-            
-            {genreMovies.length === 0 && (
+            {genreMoviesLoading ? (
+              <LoadingSpinner message={`Loading ${selectedGenre} movies...`} />
+            ) : error ? (
+              <ErrorMessage error={error} onRetry={() => handleGenreClick(selectedGenre)} />
+            ) : genreMovies.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {genreMovies.map((movie) => (
+                  <MovieCard key={movie.id} movie={movie} size="medium" />
+                ))}
+              </div>
+            ) : (
               <div className="text-center py-16">
                 <Tag className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-400 mb-2">No movies found</h3>
