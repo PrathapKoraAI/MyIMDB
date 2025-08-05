@@ -1,23 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tag, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
-import { genres, getMoviesByGenre, mockMovies } from '../data/mockMovies';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
+import { genresApi, moviesApi } from '../services/api';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 
 const Genres = () => {
   const [selectedGenre, setSelectedGenre] = useState(null);
   const [genreMovies, setGenreMovies] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [movieCounts, setMovieCounts] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [genreMoviesLoading, setGenreMoviesLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleGenreClick = (genre) => {
-    setSelectedGenre(genre);
-    const movies = getMoviesByGenre(genre);
-    setGenreMovies(movies);
-  };
+  // Fetch genres and movie counts on component mount
+  useEffect(() => {
+    const fetchGenresAndCounts = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch genres
+        const genresResponse = await genresApi.getGenres();
+        const genresList = genresResponse.genres || [];
+        setGenres(genresList);
+        
+        // Fetch movie counts for each genre
+        const counts = {};
+        await Promise.all(
+          genresList.map(async (genre) => {
+            try {
+              const response = await moviesApi.getMoviesByGenre(genre);
+              counts[genre] = response.movies?.length || 0;
+            } catch (err) {
+              counts[genre] = 0;
+            }
+          })
+        );
+        setMovieCounts(counts);
+        
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const getGenreCount = (genre) => {
-    return mockMovies.filter(movie => movie.genre.includes(genre)).length;
+    fetchGenresAndCounts();
+  }, []);
+
+  const handleGenreClick = async (genre) => {
+    try {
+      setGenreMoviesLoading(true);
+      setSelectedGenre(genre);
+      
+      const response = await moviesApi.getMoviesByGenre(genre);
+      setGenreMovies(response.movies || []);
+    } catch (err) {
+      setError(err.message);
+      setGenreMovies([]);
+    } finally {
+      setGenreMoviesLoading(false);
+    }
   };
 
   const genreColors = [
