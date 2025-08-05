@@ -2,36 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Film } from 'lucide-react';
 import MovieCard from '../components/MovieCard';
-import { searchMovies } from '../data/mockMovies';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
+import { useMovieSearch } from '../hooks/useMovies';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { searchResults, loading, error, searchMovies } = useMovieSearch();
 
   useEffect(() => {
     if (query) {
-      setLoading(true);
-      // Simulate search delay
-      setTimeout(() => {
-        const searchResults = searchMovies(query);
-        setResults(searchResults);
-        setLoading(false);
-      }, 500);
-    } else {
-      setResults([]);
-      setLoading(false);
+      searchMovies(query);
     }
   }, [query]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="flex items-center text-white">
-          <Search className="w-6 h-6 mr-2 animate-spin" />
-          Searching movies...
-        </div>
+        <LoadingSpinner size="large" message="Searching movies..." />
       </div>
     );
   }
