@@ -1,51 +1,29 @@
-import { useEffect } from "react";
+import React from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import { Toaster } from "./components/ui/toaster";
+import Header from "./components/Header";
+import Home from "./pages/Home";
+import MovieDetail from "./pages/MovieDetail";
+import Movies from "./pages/Movies";
+import SearchResults from "./pages/SearchResults";
+import Genres from "./pages/Genres";
+import TopRated from "./pages/TopRated";
 
 function App() {
   return (
-    <div className="App">
+    <div className="App min-h-screen bg-gray-950">
       <BrowserRouter>
+        <Header />
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          <Route path="/" element={<Home />} />
+          <Route path="/movie/:id" element={<MovieDetail />} />
+          <Route path="/movies" element={<Movies />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/genres" element={<Genres />} />
+          <Route path="/top-rated" element={<TopRated />} />
         </Routes>
+        <Toaster />
       </BrowserRouter>
     </div>
   );
