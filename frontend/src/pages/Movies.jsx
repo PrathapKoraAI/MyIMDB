@@ -65,7 +65,7 @@ const Movies = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">Genre</label>
-              <Select value={selectedGenre} onValueChange={handleGenreFilter}>
+              <Select value={selectedGenre} onValueChange={handleGenreFilter} disabled={genresLoading}>
                 <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                   <SelectValue placeholder="Select genre" />
                 </SelectTrigger>
@@ -99,18 +99,35 @@ const Movies = () => {
         {/* Results */}
         <div className="mb-6">
           <p className="text-gray-400">
-            Showing {filteredMovies.length} movie{filteredMovies.length !== 1 ? 's' : ''}
+            Showing {movies.length} movie{movies.length !== 1 ? 's' : ''} 
+            {pagination.total > 0 && ` of ${pagination.total} total`}
           </p>
         </div>
         
-        {/* Movies Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredMovies.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} size="medium" />
-          ))}
-        </div>
+        {/* Loading State */}
+        {loading && (
+          <LoadingSpinner message="Loading movies..." />
+        )}
         
-        {filteredMovies.length === 0 && (
+        {/* Error State */}
+        {error && (
+          <ErrorMessage 
+            error={error} 
+            onRetry={() => refetch({ genre: selectedGenre === 'all' ? undefined : selectedGenre, sortBy })} 
+          />
+        )}
+        
+        {/* Movies Grid */}
+        {!loading && !error && movies.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {movies.map((movie) => (
+              <MovieCard key={movie.id} movie={movie} size="medium" />
+            ))}
+          </div>
+        )}
+        
+        {/* No Results */}
+        {!loading && !error && movies.length === 0 && (
           <div className="text-center py-16">
             <Film className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-400 mb-2">No movies found</h3>
