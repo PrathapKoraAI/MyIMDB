@@ -3,13 +3,16 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, TrendingUp, Star } from 'lucide-react';
 import HeroSection from '../components/HeroSection';
 import MovieCard from '../components/MovieCard';
-import { getFeaturedMovies, getPopularMovies } from '../data/mockMovies';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
+import { useFeaturedMovies, useMovies } from '../hooks/useMovies';
 import { Button } from '../components/ui/button';
 
 const Home = () => {
-  const featuredMovies = getFeaturedMovies();
-  const popularMovies = getPopularMovies();
-  const heroMovie = featuredMovies[0];
+  const { featuredMovies, loading: featuredLoading, error: featuredError } = useFeaturedMovies();
+  const { movies: popularMovies, loading: popularLoading, error: popularError, refetch } = useMovies({ limit: 6 });
+  
+  const heroMovie = featuredMovies.length > 0 ? featuredMovies[0] : null;
 
   return (
     <div className="min-h-screen bg-gray-950">
