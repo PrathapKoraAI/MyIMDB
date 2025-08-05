@@ -1,21 +1,35 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Star, Calendar, Clock, User, ArrowLeft, Play } from 'lucide-react';
-import { getMovieById } from '../data/mockMovies';
+import { useMovie } from '../hooks/useMovies';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Card, CardContent } from '../components/ui/card';
 
 const MovieDetail = () => {
   const { id } = useParams();
-  const movie = getMovieById(id);
+  const { movie, loading, error } = useMovie(id);
 
-  if (!movie) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <LoadingSpinner size="large" message="Loading movie details..." />
+      </div>
+    );
+  }
+
+  if (error || !movie) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Movie Not Found</h2>
-          <Link to="/">
+          <ErrorMessage 
+            error={error || "Movie not found"} 
+            title="Movie Not Found"
+            showRetry={false}
+          />
+          <Link to="/" className="mt-4 inline-block">
             <Button>Go Back Home</Button>
           </Link>
         </div>
