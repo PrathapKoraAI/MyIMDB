@@ -45,18 +45,25 @@ const SearchResults = () => {
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-400">
-            Found {results.length} movie{results.length !== 1 ? 's' : ''}
+            Found {searchResults.length} movie{searchResults.length !== 1 ? 's' : ''}
           </p>
         </div>
         
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6">
+            <ErrorMessage error={error} onRetry={() => searchMovies(query)} />
+          </div>
+        )}
+        
         {/* Results Grid */}
-        {results.length > 0 ? (
+        {searchResults.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {results.map((movie) => (
+            {searchResults.map((movie) => (
               <MovieCard key={movie.id} movie={movie} size="medium" />
             ))}
           </div>
-        ) : (
+        ) : !loading && !error && (
           <div className="text-center py-16">
             <Film className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-400 mb-2">
