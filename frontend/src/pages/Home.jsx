@@ -17,7 +17,17 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-950">
       {/* Hero Section */}
-      <HeroSection movie={heroMovie} />
+      {featuredLoading ? (
+        <div className="h-screen flex items-center justify-center">
+          <LoadingSpinner size="large" message="Loading featured movies..." />
+        </div>
+      ) : featuredError ? (
+        <div className="h-screen flex items-center justify-center">
+          <ErrorMessage error={featuredError} showRetry={false} />
+        </div>
+      ) : (
+        heroMovie && <HeroSection movie={heroMovie} />
+      )}
       
       {/* Featured Movies Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
@@ -34,11 +44,19 @@ const Home = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featuredMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} size="medium" />
-            ))}
-          </div>
+          {featuredLoading ? (
+            <LoadingSpinner message="Loading featured movies..." />
+          ) : featuredError ? (
+            <ErrorMessage error={featuredError} showRetry={false} />
+          ) : featuredMovies.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {featuredMovies.map((movie) => (
+                <MovieCard key={movie.id} movie={movie} size="medium" />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-400 text-center py-8">No featured movies available</p>
+          )}
         </div>
       </section>
 
@@ -57,11 +75,19 @@ const Home = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-            {popularMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} size="small" />
-            ))}
-          </div>
+          {popularLoading ? (
+            <LoadingSpinner message="Loading popular movies..." />
+          ) : popularError ? (
+            <ErrorMessage error={popularError} onRetry={refetch} />
+          ) : popularMovies.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {popularMovies.map((movie) => (
+                <MovieCard key={movie.id} movie={movie} size="small" />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-400 text-center py-8">No popular movies available</p>
+          )}
         </div>
       </section>
 
