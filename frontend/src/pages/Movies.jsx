@@ -1,39 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Film, Filter } from 'lucide-react';
 import MovieCard from '../components/MovieCard';
-import { mockMovies, genres } from '../data/mockMovies';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
+import { useMovies } from '../hooks/useMovies';
+import { genresApi } from '../services/api';
 import { Button } from '../components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 const Movies = () => {
-  const [filteredMovies, setFilteredMovies] = useState(mockMovies);
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [sortBy, setSortBy] = useState('rating');
+  const [genres, setGenres] = useState([]);
+  const [genresLoading, setGenresLoading] = useState(true);
+
+  const { movies, loading, error, refetch, pagination } = useMovies({
+    genre: selectedGenre,
+    sortBy: sortBy,
+    limit: 12
+  });
+
+  // Fetch genres on component mount
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await genresApi.getGenres();
+        setGenres(response.genres || []);
+      } catch (err) {
+        console.error('Failed to fetch genres:', err);
+      } finally {
+        setGenresLoading(false);
+      }
+    };
+
+    fetchGenres();
+  }, []);
 
   const handleGenreFilter = (genre) => {
     setSelectedGenre(genre);
-    if (genre === 'all') {
-      setFilteredMovies(mockMovies);
-    } else {
-      setFilteredMovies(mockMovies.filter(movie => movie.genre.includes(genre)));
-    }
+    refetch({ genre: genre === 'all' ? undefined : genre, sortBy, page: 1 });
   };
 
   const handleSort = (criteria) => {
     setSortBy(criteria);
-    const sorted = [...filteredMovies].sort((a, b) => {
-      switch (criteria) {
-        case 'rating':
-          return b.rating - a.rating;
-        case 'year':
-          return b.year - a.year;
-        case 'title':
-          return a.title.localeCompare(b.title);
-        default:
-          return 0;
-      }
-    });
-    setFilteredMovies(sorted);
+    refetch({ genre: selectedGenre === 'all' ? undefined : selectedGenre, sortBy: criteria, page: 1 });
   };
 
   return (
