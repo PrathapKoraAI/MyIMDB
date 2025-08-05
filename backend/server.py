@@ -67,29 +67,7 @@ async def get_movies(
         logging.error(f"Error getting movies: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Get movie by ID
-@api_router.get("/movies/{movie_id}")
-async def get_movie(
-    movie_id: str,
-    db: MovieDatabase = Depends(get_movie_db)
-):
-    try:
-        movie_data = await db.get_movie_by_id(movie_id)
-        if not movie_data:
-            raise HTTPException(status_code=404, detail="Movie not found")
-        
-        # Remove MongoDB _id field
-        if '_id' in movie_data:
-            del movie_data['_id']
-        
-        return Movie(**movie_data)
-    except HTTPException:
-        raise
-    except Exception as e:
-        logging.error(f"Error getting movie {movie_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Search movies
+# Search movies (must be before /movies/{movie_id})
 @api_router.get("/movies/search")
 async def search_movies(
     q: str = Query(..., min_length=1, description="Search query"),
@@ -110,7 +88,7 @@ async def search_movies(
         logging.error(f"Error searching movies: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Get featured movies
+# Get featured movies (must be before /movies/{movie_id})
 @api_router.get("/movies/featured")
 async def get_featured_movies(
     db: MovieDatabase = Depends(get_movie_db)
@@ -130,7 +108,7 @@ async def get_featured_movies(
         logging.error(f"Error getting featured movies: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Get top rated movies
+# Get top rated movies (must be before /movies/{movie_id})
 @api_router.get("/movies/top-rated")
 async def get_top_rated_movies(
     limit: int = Query(20, ge=1, le=100, description="Number of movies to return"),
@@ -149,6 +127,28 @@ async def get_top_rated_movies(
         return {"movies": movies}
     except Exception as e:
         logging.error(f"Error getting top rated movies: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Get movie by ID (must be after specific routes)
+@api_router.get("/movies/{movie_id}")
+async def get_movie(
+    movie_id: str,
+    db: MovieDatabase = Depends(get_movie_db)
+):
+    try:
+        movie_data = await db.get_movie_by_id(movie_id)
+        if not movie_data:
+            raise HTTPException(status_code=404, detail="Movie not found")
+        
+        # Remove MongoDB _id field
+        if '_id' in movie_data:
+            del movie_data['_id']
+        
+        return Movie(**movie_data)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error getting movie {movie_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Get movies by genre
